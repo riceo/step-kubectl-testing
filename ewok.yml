@@ -69,7 +69,6 @@ build:
                 cd $WERCKER_OUTPUT_DIR
                 chmod ugo+rx "$WERCKER_OUTPUT_DIR/${GCLOUD_DIRNAME}/bin/gcloud"
                 rm -rf "${GCLOUD_DIRNAME}/platform/gsutil"
-                ln -sf ${GCLOUD_DIRNAME}/bin/kubectl kubectl
 
         - script:
             name: Compress kubectl
