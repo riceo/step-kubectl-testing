@@ -21,7 +21,7 @@ build:
                 export UPX_DIRNAME="upx-${UPX_VERSION}-amd64_linux"
                 export UPX_FILENAME="${UPX_DIRNAME}.tar.xz"
                 export UPX_URL="https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_FILENAME}"
-                echo "Installing version $KUBERNETES_VERSION of kubernetes and ${GCLOUD_VERSION} of the Google Cloud SDK"
+                echo "Installing version ${GCLOUD_VERSION} of the Google Cloud SDK"
         - script:
             name: fetch upx
             code: |
