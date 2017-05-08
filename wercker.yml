@@ -6,24 +6,31 @@ build:
         - script:
             name: config
             code: |
-                GCLOUD_VERSION="127.0.0-linux-x86_64"
+                GCLOUD_VERSION="151.0.0-linux-x86_64"
                 export GCLOUD_DIRNAME="google-cloud-sdk"
-                export KUBERNETES_VERSION="1.3.4"
-                export KUBERNETES_SHA256="81f0e3c788241419be1ee961da8804fdb16657b86e7edba8c7070932e8a50fe7"
-                export GCLOUD_SHA="45abe78986b0ff9a147904aaf20d552fa4ad6f29"
+                export GCLOUD_SHA="53caea9133e3ed0efe26164e8a29751a3caf770f"
                 export GCLOUD_FILENAME="${GCLOUD_DIRNAME}-${GCLOUD_VERSION}.tar.gz"
                 export GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_FILENAME}"
-                echo "Installing version $KUBERNETES_VERSION of kubernetes and ${GCLOUD_VERSION} of the Google Cloud SDK"
+                export UPX_VERSION="3.93"
+                export UPX_SHA="db4ec36b930e7d7e082d93124a59d38fbaedd1c0"
+                export UPX_DIRNAME="upx-${UPX_VERSION}-amd64_linux"
+                export UPX_FILENAME="${UPX_DIRNAME}.tar.xz"
+                export UPX_URL="https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_FILENAME}"
+                echo "Installing version ${GCLOUD_VERSION} of the Google Cloud SDK"
+        - script:
+            name: fetch upx
+            code: |
+                curl -L ${UPX_URL} -o ${UPX_FILENAME}
 
         - script:
-            name: fetch kubernetes archive
+            name: validate upx archive
             code: |
-                curl -L https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl > $WERCKER_OUTPUT_DIR/kubectl
+                sha1sum ${UPX_FILENAME} | grep -q "${UPX_SHA}"
 
         - script:
-            name: validate kubernetes archive
+            name: Extract upx archive
             code: |
-                cat $WERCKER_OUTPUT_DIR/kubectl| sha256sum | grep -q "$KUBERNETES_SHA256"
+                tar -xf ${UPX_FILENAME}
 
         - script:
             name: Fetch gcloud archive
@@ -54,5 +61,18 @@ build:
             name: prepare output
             code: |
                 cp  "${WERCKER_ROOT}/LICENSE" "${WERCKER_ROOT}/README.md" "${WERCKER_ROOT}/run.sh" "${WERCKER_ROOT}/wercker.yml" "${WERCKER_ROOT}/wercker-step.yml" "$WERCKER_OUTPUT_DIR"
+                cd $WERCKER_OUTPUT_DIR
                 chmod ugo+rx "$WERCKER_OUTPUT_DIR/${GCLOUD_DIRNAME}/bin/gcloud"
-                chmod ugo+rx "$WERCKER_OUTPUT_DIR/kubectl"
+                rm -rf "${GCLOUD_DIRNAME}/platform/gsutil"
+                rm -rf "${GCLOUD_DIRNAME}/platform/bq"
+
+        - script:
+            name: Compress kubectl
+            code: |
+                ${UPX_DIRNAME}/upx "$WERCKER_OUTPUT_DIR/${GCLOUD_DIRNAME}/bin/kubectl"
+
+        - script:
+            name: Measure output folder
+            code: |
+                du -csh $WERCKER_OUTPUT_DIR/*
+                du -csh $WERCKER_OUTPUT_DIR/${GCLOUD_DIRNAME}/*
