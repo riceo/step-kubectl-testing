@@ -1,4 +1,4 @@
-# kubectl
+# kubectl testing
 
 This step vendors the kubectl executable, and allows the user to execute a
 command. Most options are passed along to the `kubectl` executable as is.
